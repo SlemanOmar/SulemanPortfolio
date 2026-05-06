@@ -1,0 +1,976 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Suleman Omar — Developer & Lecturer</title>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    :root {
+      --bg:      #080b10;
+      --bg2:     #0d1117;
+      --bg3:     #111827;
+      --surface: rgba(255,255,255,0.038);
+      --border:  rgba(0,229,255,0.14);
+      --accent:  #00e5ff;
+      --accent2: #7fff6e;
+      --accent3: #ff6e6e;
+      --text:    #e2e8f0;
+      --muted:   #64748b;
+      --glow:    0 0 28px rgba(0,229,255,0.3);
+      --glow2:   0 0 28px rgba(127,255,110,0.3);
+    }
+    [data-theme="light"] {
+      --bg:      #f5f7fa;
+      --bg2:     #edf0f5;
+      --bg3:     #e2e8f0;
+      --surface: rgba(0,0,0,0.04);
+      --border:  rgba(0,130,180,0.18);
+      --accent:  #0077aa;
+      --accent2: #2e8b00;
+      --accent3: #cc3333;
+      --text:    #0f172a;
+      --muted:   #64748b;
+      --glow:    0 0 20px rgba(0,119,170,0.2);
+      --glow2:   0 0 20px rgba(46,139,0,0.2);
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: 'Outfit', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      overflow-x: hidden;
+      cursor: none;
+      transition: background .4s, color .4s;
+    }
+    ::selection { background: var(--accent); color: #000; }
+
+    /* ── Cursor ── */
+    #cur-dot, #cur-ring {
+      position: fixed; border-radius: 50%;
+      pointer-events: none; z-index: 9999;
+      transform: translate(-50%,-50%);
+    }
+    #cur-dot {
+      width: 8px; height: 8px;
+      background: var(--accent); box-shadow: var(--glow);
+      transition: width .2s, height .2s, background .2s;
+    }
+    #cur-ring {
+      width: 34px; height: 34px;
+      border: 1.5px solid var(--accent);
+      opacity: .55;
+      transition: width .25s, height .25s, border-color .25s, opacity .25s;
+    }
+    body.hov #cur-dot  { width: 14px; height: 14px; background: var(--accent2); box-shadow: var(--glow2); }
+    body.hov #cur-ring { width: 50px; height: 50px; border-color: var(--accent2); opacity: .75; }
+
+    /* ── Scrollbar ── */
+    ::-webkit-scrollbar { width: 4px; }
+    ::-webkit-scrollbar-track { background: var(--bg); }
+    ::-webkit-scrollbar-thumb { background: var(--accent); border-radius: 4px; }
+
+    /* ── Noise overlay ── */
+    body::before {
+      content: ''; position: fixed; inset: 0; z-index: 0; pointer-events: none;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+      opacity: .5;
+    }
+
+    /* ── Nav ── */
+    nav {
+      position: fixed; top: 0; width: 100%; z-index: 100;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 1rem 2.5rem;
+      background: rgba(8,11,16,.8);
+      backdrop-filter: blur(20px) saturate(160%);
+      border-bottom: 1px solid var(--border);
+      transition: background .4s;
+    }
+    [data-theme="light"] nav { background: rgba(245,247,250,.85); }
+    .logo {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 1.1rem; color: var(--accent);
+      letter-spacing: .06em; text-shadow: var(--glow);
+    }
+    .nav-links { display: flex; gap: 2.2rem; list-style: none; }
+    .nav-links a {
+      color: var(--muted); text-decoration: none;
+      font-size: .85rem; font-weight: 500; letter-spacing: .05em;
+      transition: color .2s;
+    }
+    .nav-links a:hover, .nav-links a.active { color: var(--accent); }
+
+    /* toggle */
+    .thm-toggle {
+      display: flex; align-items: center; gap: .55rem;
+      font-size: .72rem; color: var(--muted); letter-spacing: .06em;
+    }
+    .switch { position: relative; width: 40px; height: 22px; }
+    .switch input { opacity: 0; width: 0; height: 0; }
+    .knob {
+      position: absolute; inset: 0; border-radius: 34px;
+      background: var(--surface); border: 1px solid var(--border);
+      cursor: pointer; transition: .3s;
+    }
+    .knob::before {
+      content: ''; position: absolute;
+      width: 14px; height: 14px; border-radius: 50%;
+      left: 3px; bottom: 3px;
+      background: var(--accent); box-shadow: var(--glow);
+      transition: .3s;
+    }
+    input:checked + .knob::before { transform: translateX(18px); background: #fbbf24; box-shadow: 0 0 14px rgba(251,191,36,.5); }
+
+    /* hamburger */
+    .ham { display: none; flex-direction: column; gap: 5px; cursor: pointer; }
+    .ham span { width: 22px; height: 2px; background: var(--accent); border-radius: 2px; transition: .3s; }
+    .ham.open span:nth-child(1) { transform: translateY(7px) rotate(45deg); }
+    .ham.open span:nth-child(2) { opacity: 0; }
+    .ham.open span:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
+    .mob-nav {
+      display: none; position: fixed; top: 62px; inset-x: 0;
+      background: rgba(8,11,16,.97); backdrop-filter: blur(20px);
+      flex-direction: column; align-items: center; gap: 1.8rem;
+      padding: 2.2rem; z-index: 99; border-bottom: 1px solid var(--border);
+      list-style: none;
+    }
+    .mob-nav.open { display: flex; }
+    .mob-nav a { color: var(--text); text-decoration: none; font-size: 1.05rem; }
+
+    /* ── Glass ── */
+    .glass {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border-radius: 18px;
+    }
+
+    /* ── Section ── */
+    .sec { padding: 7rem 2rem; max-width: 1080px; margin: 0 auto; position: relative; z-index: 1; }
+    .sec-title {
+      font-size: clamp(1.5rem,3.8vw,2.2rem);
+      font-weight: 800; margin-bottom: 3rem; letter-spacing: -.02em;
+      display: flex; align-items: center; gap: .7rem;
+    }
+    .sec-title::before {
+      content: ''; width: 10px; height: 10px; border-radius: 50%;
+      background: var(--accent); box-shadow: var(--glow); flex-shrink: 0;
+    }
+
+    /* ── Reveal ── */
+    .rev {
+      opacity: 0; transform: translateY(32px);
+      transition: opacity .75s cubic-bezier(.22,1,.36,1), transform .75s cubic-bezier(.22,1,.36,1);
+    }
+    .rev.in { opacity: 1; transform: none; }
+
+    /* ══ HERO ══ */
+    #hero {
+      min-height: 100vh; display: flex; flex-direction: column;
+      justify-content: center; align-items: flex-start;
+      padding: 7rem 2rem 5rem; max-width: 1080px; margin: 0 auto;
+      position: relative; z-index: 1;
+    }
+    /* Background decorations */
+    .hero-deco {
+      position: fixed; inset: 0; z-index: 0; pointer-events: none; overflow: hidden;
+    }
+    .hero-deco::before {
+      content: ''; position: absolute;
+      width: 700px; height: 700px; border-radius: 50%;
+      top: -200px; right: -200px;
+      background: radial-gradient(circle, rgba(0,229,255,.08) 0%, transparent 70%);
+    }
+    .hero-deco::after {
+      content: ''; position: absolute;
+      width: 500px; height: 500px; border-radius: 50%;
+      bottom: 10%; left: -150px;
+      background: radial-gradient(circle, rgba(127,255,110,.06) 0%, transparent 70%);
+    }
+
+    .hero-tag {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: .75rem; letter-spacing: .14em;
+      color: var(--accent); margin-bottom: 1.3rem;
+      display: flex; align-items: center; gap: .5rem;
+    }
+    .hero-tag::before {
+      content: ''; width: 32px; height: 1px; background: var(--accent);
+    }
+    .hero-name {
+      font-size: clamp(3rem, 9vw, 6.5rem);
+      font-weight: 900; line-height: .95;
+      letter-spacing: -.04em; margin-bottom: .6rem;
+    }
+    .hero-name .accent { color: var(--accent); }
+    .hero-role {
+      font-size: clamp(1.1rem, 2.8vw, 1.7rem);
+      font-weight: 300; color: var(--muted);
+      margin-bottom: 1.8rem; letter-spacing: -.01em;
+    }
+    .hero-role strong { color: var(--text); font-weight: 600; }
+    .hero-bio {
+      max-width: 540px; color: var(--muted); line-height: 1.8;
+      font-size: .97rem; margin-bottom: 2.5rem;
+    }
+    .hero-btns { display: flex; gap: 1rem; flex-wrap: wrap; }
+
+    .btn-primary {
+      padding: .82rem 1.9rem; border-radius: 999px;
+      background: var(--accent); color: #000;
+      font-weight: 700; font-size: .9rem; letter-spacing: .05em;
+      border: none; cursor: none; text-decoration: none;
+      display: inline-flex; align-items: center; gap: .45rem;
+      animation: pulse-glow 2.6s ease-in-out infinite;
+      transition: background .2s, transform .18s;
+    }
+    .btn-primary:hover { background: var(--accent2); transform: scale(1.04); }
+    @keyframes pulse-glow {
+      0%,100% { box-shadow: 0 0 0 0 rgba(0,229,255,.5); }
+      50%      { box-shadow: 0 0 0 14px rgba(0,229,255,0); }
+    }
+    .btn-ghost {
+      padding: .82rem 1.9rem; border-radius: 999px;
+      border: 1px solid var(--border); color: var(--text);
+      font-weight: 500; font-size: .9rem;
+      text-decoration: none; cursor: none;
+      display: inline-flex; align-items: center; gap: .45rem;
+      background: var(--surface);
+      transition: border-color .2s, color .2s, box-shadow .2s;
+    }
+    .btn-ghost:hover { border-color: var(--accent); color: var(--accent); box-shadow: var(--glow); }
+
+    /* Hero stats */
+    .hero-stats {
+      display: flex; gap: 2.5rem; margin-top: 3.5rem;
+      padding-top: 2rem; border-top: 1px solid var(--border);
+      flex-wrap: wrap;
+    }
+    .hstat { display: flex; flex-direction: column; }
+    .hstat-n { font-size: 2rem; font-weight: 800; color: var(--accent); line-height: 1; }
+    .hstat-l { font-size: .72rem; color: var(--muted); margin-top: .2rem; letter-spacing: .09em; }
+
+    /* scroll hint */
+    .scroll-hint {
+      position: absolute; bottom: 2.5rem; left: 50%;
+      transform: translateX(-50%);
+      display: flex; flex-direction: column; align-items: center; gap: .4rem;
+      font-size: .65rem; letter-spacing: .14em; color: var(--muted);
+      animation: bob 2.2s ease-in-out infinite;
+    }
+    @keyframes bob { 0%,100% { transform: translateX(-50%) translateY(0); } 50% { transform: translateX(-50%) translateY(8px); } }
+
+    /* ══ ABOUT ══ */
+    .about-grid { display: grid; grid-template-columns: 1fr 1.7fr; gap: 3rem; align-items: center; }
+    .about-card {
+      border-radius: 20px; overflow: hidden;
+      aspect-ratio: 3/4; position: relative;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .about-card::before {
+      content: ''; position: absolute; inset: -2px; border-radius: 22px; z-index: -1;
+      background: linear-gradient(140deg, var(--accent), var(--accent2), transparent);
+    }
+    .about-card-inner {
+      width: 100%; height: 100%; background: var(--bg2);
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      gap: 1rem; color: var(--muted);
+    }
+    .avi { font-size: 5rem; }
+    .about-card-inner p { font-size: .7rem; letter-spacing: .12em; }
+
+    .about-text h3 { font-size: 1.7rem; font-weight: 800; margin-bottom: 1rem; }
+    .about-text p { color: var(--muted); line-height: 1.82; margin-bottom: .9rem; font-size: .95rem; }
+    .info-chips { display: flex; flex-wrap: wrap; gap: .6rem; margin: 1.3rem 0; }
+    .chip {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: .72rem; letter-spacing: .07em;
+      padding: .3rem .85rem; border-radius: 999px;
+      border: 1px solid var(--border); background: var(--surface); color: var(--muted);
+    }
+    .chip.hi { border-color: rgba(0,229,255,.4); color: var(--accent); background: rgba(0,229,255,.07); }
+
+    /* ══ EXPERIENCE ══ */
+    .timeline { position: relative; padding-left: 2rem; }
+    .timeline::before {
+      content: ''; position: absolute; left: 0; top: 8px; bottom: 8px;
+      width: 1px; background: linear-gradient(to bottom, var(--accent), var(--accent2), transparent);
+    }
+    .t-entry { position: relative; margin-bottom: 2.8rem; }
+    .t-entry::before {
+      content: ''; position: absolute; left: -2.4rem; top: 8px;
+      width: 9px; height: 9px; border-radius: 50%;
+      background: var(--accent); box-shadow: var(--glow);
+    }
+    .t-header { display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: .4rem; margin-bottom: .5rem; }
+    .t-role { font-size: 1.08rem; font-weight: 700; }
+    .t-company { font-weight: 500; color: var(--accent); margin-bottom: .15rem; font-size: .92rem; }
+    .t-period {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: .72rem; color: var(--muted); letter-spacing: .06em;
+      padding: .2rem .7rem; border-radius: 999px;
+      border: 1px solid var(--border); background: var(--surface);
+      white-space: nowrap;
+    }
+    .t-bullets { list-style: none; margin-top: .6rem; display: flex; flex-direction: column; gap: .45rem; }
+    .t-bullets li {
+      color: var(--muted); font-size: .9rem; line-height: 1.65;
+      display: flex; gap: .7rem;
+    }
+    .t-bullets li::before { content: '→'; color: var(--accent); flex-shrink: 0; }
+
+    /* ══ PROJECTS ══ */
+    .proj-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1.5rem; }
+    .proj-card {
+      border-radius: 18px; padding: 1.8rem; cursor: none;
+      border: 1px solid var(--border); background: var(--surface);
+      backdrop-filter: blur(16px);
+      transition: transform .35s cubic-bezier(.22,1,.36,1), box-shadow .35s, border-color .35s;
+      position: relative; overflow: hidden;
+    }
+    .proj-card::before {
+      content: ''; position: absolute; inset: 0; opacity: 0;
+      background: linear-gradient(135deg, rgba(0,229,255,.05), rgba(127,255,110,.03));
+      transition: opacity .35s;
+    }
+    .proj-card:hover { transform: translateY(-6px) scale(1.01); border-color: rgba(0,229,255,.35); box-shadow: var(--glow), 0 24px 50px rgba(0,0,0,.3); }
+    .proj-card:hover::before { opacity: 1; }
+    .proj-icon {
+      width: 46px; height: 46px; border-radius: 12px; margin-bottom: 1.2rem;
+      display: flex; align-items: center; justify-content: center; font-size: 1.5rem;
+      background: rgba(0,229,255,.1); border: 1px solid rgba(0,229,255,.2);
+    }
+    .proj-name { font-size: 1.1rem; font-weight: 700; margin-bottom: .5rem; }
+    .proj-desc { color: var(--muted); font-size: .88rem; line-height: 1.7; margin-bottom: 1.2rem; }
+    .tech-row { display: flex; flex-wrap: wrap; gap: .4rem; }
+    .tech-pill {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: .68rem; letter-spacing: .06em;
+      padding: .2rem .65rem; border-radius: 999px;
+      border: 1px solid var(--border); color: var(--muted);
+      transition: border-color .2s, color .2s;
+    }
+    .proj-card:hover .tech-pill { border-color: rgba(0,229,255,.3); color: var(--accent); }
+
+    /* ══ SKILLS ══ */
+    .skills-layout { display: grid; grid-template-columns: 1fr 1fr; gap: 3rem; }
+    .skill-group h3 { font-size: .78rem; letter-spacing: .12em; color: var(--muted); margin-bottom: 1.5rem; }
+    .bar-item { margin-bottom: 1.3rem; }
+    .bar-label { display: flex; justify-content: space-between; font-size: .88rem; margin-bottom: .45rem; }
+    .bar-track { height: 6px; border-radius: 999px; background: rgba(255,255,255,.07); overflow: hidden; }
+    .bar-fill {
+      height: 100%; border-radius: 999px; width: 0;
+      background: linear-gradient(90deg, var(--accent), var(--accent2));
+      box-shadow: 0 0 10px rgba(0,229,255,.5);
+      transition: width 1.2s cubic-bezier(.22,1,.36,1);
+    }
+    .tag-wrap { display: flex; flex-wrap: wrap; gap: .6rem; }
+    .ttag {
+      padding: .38rem .9rem; border-radius: 999px;
+      font-size: .78rem; font-weight: 500;
+      border: 1px solid var(--border); background: var(--surface);
+      color: var(--muted); font-family: 'JetBrains Mono', monospace;
+      transition: border-color .2s, color .2s, box-shadow .2s, transform .2s;
+    }
+    .ttag:hover { border-color: var(--accent); color: var(--accent); box-shadow: var(--glow); transform: translateY(-2px); }
+
+    /* lang chips */
+    .lang-row { display: flex; gap: 1rem; flex-wrap: wrap; margin-top: 2rem; }
+    .lang-chip {
+      padding: .6rem 1.3rem; border-radius: 12px;
+      border: 1px solid var(--border); background: var(--surface);
+      display: flex; flex-direction: column; align-items: center; gap: .2rem;
+    }
+    .lang-name { font-weight: 700; font-size: .95rem; }
+    .lang-level { font-size: .72rem; color: var(--muted); letter-spacing: .06em; }
+
+    /* ══ CONTACT ══ */
+    .contact-grid { display: grid; grid-template-columns: 1fr 1.4fr; gap: 3rem; align-items: start; }
+    .contact-info h3 { font-size: 1.5rem; font-weight: 800; margin-bottom: .9rem; }
+    .contact-info p { color: var(--muted); line-height: 1.8; font-size: .94rem; margin-bottom: 1.8rem; }
+    .c-links { display: flex; flex-direction: column; gap: .9rem; }
+    .c-link {
+      display: flex; align-items: center; gap: .85rem;
+      color: var(--muted); text-decoration: none; font-size: .9rem;
+      transition: color .2s;
+    }
+    .c-link:hover { color: var(--accent); }
+    .c-link svg { width: 17px; height: 17px; flex-shrink: 0; }
+    .c-link span { font-family: 'JetBrains Mono', monospace; font-size: .82rem; }
+
+    .form { display: flex; flex-direction: column; gap: 1.1rem; }
+    .fg { display: flex; flex-direction: column; gap: .38rem; }
+    .fg label { font-size: .72rem; letter-spacing: .1em; color: var(--muted); }
+    .fi {
+      padding: .82rem 1.1rem; border-radius: 11px;
+      background: var(--surface); border: 1px solid var(--border);
+      color: var(--text); font-family: 'Outfit', sans-serif; font-size: .93rem;
+      outline: none; transition: border-color .25s, box-shadow .25s;
+    }
+    .fi:focus { border-color: var(--accent); box-shadow: var(--glow); }
+    .fi::placeholder { color: var(--muted); }
+    textarea.fi { resize: vertical; min-height: 120px; }
+    .send-btn {
+      padding: .88rem 2rem; border-radius: 999px;
+      background: var(--accent); color: #000;
+      font-weight: 700; font-size: .9rem; letter-spacing: .04em;
+      border: none; cursor: none; width: fit-content;
+      transition: background .2s, transform .18s, box-shadow .2s;
+    }
+    .send-btn:hover { background: var(--accent2); transform: scale(1.04); box-shadow: var(--glow2); }
+    .form-ok {
+      display: none; padding: .9rem; border-radius: 11px;
+      background: rgba(127,255,110,.08); border: 1px solid rgba(127,255,110,.3);
+      color: var(--accent2); font-size: .88rem;
+    }
+
+    /* ── Footer ── */
+    footer {
+      text-align: center; padding: 2.5rem; position: relative; z-index: 1;
+      border-top: 1px solid var(--border); color: var(--muted); font-size: .8rem;
+    }
+    footer em { color: var(--accent); font-style: normal; }
+
+    /* ── Responsive ── */
+    @media (max-width: 768px) {
+      .nav-links { display: none; }
+      .ham { display: flex; }
+      #hero { align-items: center; text-align: center; }
+      .hero-tag::before { display: none; }
+      .hero-btns { justify-content: center; }
+      .hero-stats { justify-content: center; }
+      .about-grid { grid-template-columns: 1fr; }
+      .about-card { max-width: 220px; margin: 0 auto; }
+      .skills-layout { grid-template-columns: 1fr; }
+      .contact-grid { grid-template-columns: 1fr; }
+    }
+    @media (max-width: 480px) {
+      .sec { padding: 4.5rem 1.2rem; }
+      .proj-grid { grid-template-columns: 1fr; }
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    .soc-card {
+  display: flex; flex-direction: column; align-items: center;
+  gap: .7rem; padding: 1.6rem 1rem; border-radius: 16px;
+  border: 1px solid var(--border); background: var(--surface);
+  text-decoration: none; cursor: none;
+  transition: transform .3s cubic-bezier(.22,1,.36,1), border-color .25s, box-shadow .25s;
+}
+.soc-card:hover { transform: translateY(-5px); border-color: rgba(0,229,255,.4); box-shadow: var(--glow); }
+.soc-icon {
+  width: 56px; height: 56px; border-radius: 14px;
+  display: flex; align-items: center; justify-content: center;
+  border: 1px solid transparent;
+}
+.soc-name { font-weight: 700; font-size: .95rem; color: var(--text); }
+.soc-handle { font-family: 'JetBrains Mono', monospace; font-size: .7rem; color: var(--muted); text-align: center; }
+  </style>
+</head>
+<body>
+
+<div id="cur-dot"></div>
+<div id="cur-ring"></div>
+<div class="hero-deco"></div>
+
+<!-- ── NAV ── -->
+<nav>
+  <div class="logo">suleman.omar</div>
+  <ul class="nav-links">
+    <li><a href="#about">About</a></li>
+    <li><a href="#experience">Experience</a></li>
+    <li><a href="#projects">Projects</a></li>
+    <li><a href="#skills">Skills</a></li>
+    <li><a href="#contact">Contact</a></li>
+  </ul>
+  <div style="display:flex;align-items:center;gap:1.2rem;">
+    <div class="thm-toggle">
+      <span id="tlabel">DARK</span>
+      <label class="switch">
+        <input type="checkbox" id="ttoggle"/>
+        <span class="knob"></span>
+      </label>
+    </div>
+    <div class="ham" id="ham"><span></span><span></span><span></span></div>
+  </div>
+</nav>
+<ul class="mob-nav" id="mobnav">
+  <li><a href="#about">About</a></li>
+  <li><a href="#experience">Experience</a></li>
+  <li><a href="#projects">Projects</a></li>
+  <li><a href="#skills">Skills</a></li>
+  <li><a href="#contact">Contact</a></li>
+</ul>
+
+<!-- ══ HERO ══ -->
+<section id="hero">
+  <div class="rev">
+    <div class="hero-tag">COMPUTER SCIENCE GRADUATE &amp; DEVELOPER</div>
+    <h1 class="hero-name">
+      Suleman<br><span class="accent">Omar</span>
+    </h1>
+    <p class="hero-role">
+      <strong>Lecturer</strong> · Web Developer · <strong>AI</strong> Developer
+    </p>
+    <p class="hero-bio">
+      Results-driven CS graduate from Cihan University – Duhok, building web applications, AI chatbots, and security tools. Currently teaching Python &amp; C# while shipping real-world software.
+    </p>
+    <div class="hero-btns">
+      <a href="#projects" class="btn-primary">View Projects ↓</a>
+      <a href="#contact" class="btn-ghost">Get In Touch</a>
+    </div>
+    <div class="hero-stats">
+      <div class="hstat"><span class="hstat-n">#2</span><span class="hstat-l">UNIVERSITY RANK</span></div>
+      <div class="hstat"><span class="hstat-n">82%</span><span class="hstat-l">HONOURS SCORE</span></div>
+      <div class="hstat"><span class="hstat-n">3+</span><span class="hstat-l">YEARS EXP.</span></div>
+      <div class="hstat"><span class="hstat-n">2</span><span class="hstat-l">MAJOR PROJECTS</span></div>
+    </div>
+  </div>
+  <div class="scroll-hint">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12l7 7 7-7"/></svg>
+    SCROLL
+  </div>
+</section>
+
+<!-- ══ ABOUT ══ -->
+<section id="about" class="sec">
+  <p class="sec-title rev">About Me</p>
+  <div class="about-grid">
+    <div class="about-card rev">
+      <div class="about-card-inner">
+        <div class="avi">👨‍💻</div>
+        <p>SULEMAN OMAR</p>
+      </div>
+    </div>
+    <div class="rev">
+      <h3 class="about-text">Hi, I'm <span style="color:var(--accent)">Suleman</span> 👋</h3>
+      <br>
+      <p class="about-text">A Computer Science graduate (ranked <strong style="color:var(--accent)">#2</strong>) from Cihan University – Duhok, graduating with Honours at 82%. I have a strong passion for building things that matter — from AI-powered chatbots to cryptographic security tools.</p>
+      <p class="about-text">Currently serving as a Lecturer at Zakho Private Institute, teaching Python and C# while actively contributing to curriculum development and supervising final-year student projects.</p>
+      <div class="info-chips">
+        <span class="chip hi">📍 Zakho, Duhok, Iraq</span>
+        <span class="chip hi">🎂 Born Sep 13, 2002</span>
+        <a  href="mailto:suleman.omar13@gmail.com"><span class="chip">suleman.omar13@gmail.com</span></a>
+        <a  href="tel:+9647514421683"><span class="chip">+964 751 442 1683</span></a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══ EXPERIENCE ══ -->
+<section id="experience" class="sec">
+  <p class="sec-title rev">Experience</p>
+  <div class="timeline">
+
+    <div class="t-entry rev">
+      <div class="t-header">
+        <div>
+          <div class="t-company">Zakho Private Institute (Evening Studies)</div>
+          <div class="t-role">Lecturer</div>
+        </div>
+        <span class="t-period">Sep 2025 — Present</span>
+      </div>
+      <ul class="t-bullets">
+        <li>Teaching Python I, Python II, and C# programming with a focus on practical software development and algorithmic thinking.</li>
+        <li>Active member of the Scientific Committee and Computer Laboratory Committee, contributing to curriculum development and academic planning.</li>
+        <li>Supervising multiple student groups in their final-year projects.</li>
+      </ul>
+    </div>
+
+    <div class="t-entry rev">
+      <div class="t-header">
+        <div>
+          <div class="t-company">Zakho City Independent Administration</div>
+          <div class="t-role">IT Technician (Intern)</div>
+        </div>
+        <span class="t-period">Summer 2024</span>
+      </div>
+      <ul class="t-bullets">
+        <li>Assisted with hardware maintenance and troubleshooting across office systems.</li>
+        <li>Supported staff with daily technical issues and software configuration.</li>
+        <li>Assisted with data backup tasks and system maintenance.</li>
+      </ul>
+    </div>
+
+    <div class="t-entry rev">
+      <div class="t-header">
+        <div>
+          <div class="t-company">Al Hayat Pepsi Company</div>
+          <div class="t-role">IT & Data Entry Specialist</div>
+        </div>
+        <span class="t-period">2021 — 2023</span>
+      </div>
+      <ul class="t-bullets">
+        <li>Entered, updated, and verified large datasets with high accuracy and attention to detail.</li>
+        <li>Used Excel/Sheets to sort, filter, and manage operational data efficiently.</li>
+        <li>Assisted with IT tasks including software updates and user account management.</li>
+        <li>Troubleshot common computer, login, and system access issues for staff.</li>
+      </ul>
+    </div>
+
+  </div>
+</section>
+
+<!-- ══ PROJECTS ══ -->
+<section id="projects" class="sec">
+  <p class="sec-title rev">Projects</p>
+  <div class="proj-grid">
+
+    <div class="proj-card rev">
+      <div class="proj-icon">🤖</div>
+      <div class="proj-name">AI University Chatbot</div>
+      <div class="proj-desc">
+        A web-based AI chatbot capable of answering a wide range of questions about Cihan University – Duhok, including admissions, programs, campus life, and resources. Powered by the OpenAI API.
+      </div>
+      <div class="tech-row">
+        <span class="tech-pill">OpenAI API</span>
+        <span class="tech-pill">JavaScript</span>
+        <span class="tech-pill">HTML</span>
+        <span class="tech-pill">CSS</span>
+      </div>
+    </div>
+
+    <div class="proj-card rev">
+      <div class="proj-icon" style="background:rgba(127,255,110,.1);border-color:rgba(127,255,110,.2);">🔐</div>
+      <div class="proj-name">Steganography Tool</div>
+      <div class="proj-desc">
+        A secure Windows Forms application that hides AES-encrypted text inside images using Least Significant Bit (LSB) manipulation — concealing data without any visible visual change.
+      </div>
+      <div class="tech-row">
+        <span class="tech-pill">C#</span>
+        <span class="tech-pill">Windows Forms</span>
+        <span class="tech-pill">AES Encryption</span>
+        <span class="tech-pill">LSB</span>
+        <span class="tech-pill">.NET</span>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- ══ SKILLS ══ -->
+<section id="skills" class="sec">
+  <p class="sec-title rev">Skills</p>
+  <div class="skills-layout">
+
+    <div class="rev">
+      <div class="skill-group">
+        <h3>PROGRAMMING PROFICIENCY</h3>
+        <div class="bar-item">
+          <div class="bar-label"><span>Python</span><span>88%</span></div>
+          <div class="bar-track"><div class="bar-fill" data-w="88"></div></div>
+        </div>
+        <div class="bar-item">
+          <div class="bar-label"><span>JavaScript</span><span>82%</span></div>
+          <div class="bar-track"><div class="bar-fill" data-w="82"></div></div>
+        </div>
+        <div class="bar-item">
+          <div class="bar-label"><span>C# / .NET</span><span>80%</span></div>
+          <div class="bar-track"><div class="bar-fill" data-w="80"></div></div>
+        </div>
+        <div class="bar-item">
+          <div class="bar-label"><span>PHP / Web Dev</span><span>75%</span></div>
+          <div class="bar-track"><div class="bar-fill" data-w="75"></div></div>
+        </div>
+        <div class="bar-item">
+          <div class="bar-label"><span>SQL / Databases</span><span>78%</span></div>
+          <div class="bar-track"><div class="bar-fill" data-w="78"></div></div>
+        </div>
+        <div class="bar-item">
+          <div class="bar-label"><span>C++ / OOP</span><span>72%</span></div>
+          <div class="bar-track"><div class="bar-fill" data-w="72"></div></div>
+        </div>
+      </div>
+
+      <div class="lang-row">
+        <div class="lang-chip">
+          <span class="lang-name">🇮🇶 Kurdish</span>
+          <span class="lang-level">NATIVE</span>
+        </div>
+        <div class="lang-chip">
+          <span class="lang-name">🇬🇧 English</span>
+          <span class="lang-level">PROFICIENT</span>
+        </div>
+        <div class="lang-chip">
+          <span class="lang-name">🇮🇶 Arabic</span>
+          <span class="lang-level">READING</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="rev">
+      <div class="skill-group">
+        <h3>TECHNICAL STACK</h3>
+        <div class="tag-wrap">
+          <span class="ttag">Python</span>
+          <span class="ttag">C#</span>
+          <span class="ttag">C++</span>
+          <span class="ttag">JavaScript</span>
+          <span class="ttag">PHP</span>
+          <span class="ttag">HTML5</span>
+          <span class="ttag">CSS3</span>
+          <span class="ttag">SQL</span>
+          <span class="ttag">OpenAI API</span>
+          <span class="ttag">Windows Forms</span>
+          <span class="ttag">.NET Framework</span>
+          <span class="ttag">AES Encryption</span>
+          <span class="ttag">LSB Steganography</span>
+          <span class="ttag">Excel / Sheets</span>
+          <span class="ttag">Git</span>
+          <span class="ttag">Linux</span>
+          <span class="ttag">Windows</span>
+          <span class="ttag">Hardware Maintenance</span>
+          <span class="ttag">IT Support</span>
+          <span class="ttag">Networking</span>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- ══ CONTACT ══ 
+<section id="contact" class="sec">
+  <p class="sec-title rev">Contact</p>
+  <div class="contact-grid">
+    <div class="rev">
+      <h3>Let's connect ✨</h3>
+      <p>Whether you have a project idea, a teaching opportunity, or just want to chat about tech — my inbox is always open.</p>
+      <div class="c-links">
+        <a href="mailto:suleman.omar13@gmail.com" class="c-link">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+          <span>suleman.omar13@gmail.com</span>
+        </a>
+        <a href="tel:+9647514421683" class="c-link">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 11.5 19.79 19.79 0 0 1 1.17 2.88 2 2 0 0 1 3.12 1h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.09 8.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 21 16.92z"/></svg>
+          <span>+964 751 442 1683</span>
+        </a>
+        <a href="#" class="c-link">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+          <span>Zakho, Duhok, Iraq</span>
+        </a>
+      </div>
+    </div>
+
+    <form class="form glass rev" style="padding:2rem;" onsubmit="sendForm(event)">
+      <div class="fg">
+        <label>YOUR NAME</label>
+        <input class="fi" type="text" placeholder="Jane Smith" required/>
+      </div>
+      <div class="fg">
+        <label>EMAIL</label>
+        <input class="fi" type="email" placeholder="jane@example.com" required/>
+      </div>
+      <div class="fg">
+        <label>MESSAGE</label>
+        <textarea class="fi" placeholder="Your message..."></textarea>
+      </div>
+      <div class="form-ok" id="fok">✓ &nbsp;Message sent! Suleman will get back to you soon.</div>
+      <button type="submit" class="send-btn">Send Message →</button>
+    </form>
+  </div>
+</section>
+-->
+
+
+
+
+<!-- ══ CONTACT ══ -->
+<section id="contact" class="sec">
+  <p class="sec-title rev">Contact</p>
+  <p style="color:var(--muted);line-height:1.8;font-size:.95rem;margin-bottom:2rem;max-width:520px;">
+    Have a project or opportunity in mind? Reach out through any of these channels — I typically respond within 24 hours.
+  </p>
+  <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:1.2rem;">
+
+    <a href="https://wa.me/9647514421683" target="_blank" class="soc-card">
+      <div class="soc-icon" style="background:rgba(37,211,102,.12);border-color:rgba(37,211,102,.25);">
+        <svg viewBox="0 0 24 24" width="26" height="26" fill="#25d166"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+      </div>
+      <span class="soc-name">WhatsApp</span>
+      <span class="soc-handle">+964 751 442 1683</span>
+    </a>
+
+    <a href="https://linkedin.com/in/suleman-omar" target="_blank" class="soc-card">
+      <div class="soc-icon" style="background:rgba(10,102,194,.12);border-color:rgba(10,102,194,.25);">
+        <svg viewBox="0 0 24 24" width="26" height="26" fill="#0a66c2"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 01-2.063-2.065 2.064 2.064 0 112.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>
+      </div>
+      <span class="soc-name">LinkedIn</span>
+      <span class="soc-handle">suleman-omar</span>
+    </a>
+
+    <a href="mailto:suleman.omar13@gmail.com" class="soc-card">
+      <div class="soc-icon" style="background:rgba(234,67,53,.12);border-color:rgba(234,67,53,.25);">
+        <svg viewBox="0 0 24 24" width="26" height="26" fill="#ea4335"><path d="M24 5.457v13.909c0 .904-.732 1.636-1.636 1.636h-3.819V11.73L12 16.64l-6.545-4.91v9.273H1.636A1.636 1.636 0 010 19.366V5.457c0-2.023 2.309-3.178 3.927-1.964L5.455 4.64 12 9.548l6.545-4.91 1.528-1.145C21.69 2.28 24 3.434 24 5.457z"/></svg>
+      </div>
+      <span class="soc-name">Email</span>
+      <span class="soc-handle">suleman.omar13@gmail.com</span>
+    </a>
+<!--
+    <a href="https://github.com/suleman-omar" target="_blank" class="soc-card">
+      <div class="soc-icon" style="background:rgba(139,92,246,.12);border-color:rgba(139,92,246,.25);">
+        <svg viewBox="0 0 24 24" width="26" height="26" fill="#8b5cf6"><path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"/></svg>
+      </div>
+      <span class="soc-name">GitHub</span>
+      <span class="soc-handle">suleman-omar</span>
+    </a>
+
+
+-->
+    <a href="https://t.me/Slemanomarr" target="_blank" class="soc-card">
+      <div class="soc-icon" style="background:rgba(0,136,204,.12);border-color:rgba(0,136,204,.25);">
+        <svg viewBox="0 0 24 24" width="26" height="26" fill="#0088cc"><path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z"/></svg>
+      </div>
+      <span class="soc-name">Telegram</span>
+      <span class="soc-handle">@sulemanomar</span>
+    </a>
+
+    <a href="https://instagram.com/slemanomarr" target="_blank" class="soc-card">
+  <div class="soc-icon" style="background:rgba(225,48,108,.12);border-color:rgba(225,48,108,.25);">
+    <svg viewBox="0 0 24 24" width="26" height="26" fill="url(#ig-grad)">
+      <defs>
+        <linearGradient id="ig-grad" x1="0%" y1="100%" x2="100%" y2="0%">
+          <stop offset="0%" stop-color="#f09433"/>
+          <stop offset="25%" stop-color="#e6683c"/>
+          <stop offset="50%" stop-color="#dc2743"/>
+          <stop offset="75%" stop-color="#cc2366"/>
+          <stop offset="100%" stop-color="#bc1888"/>
+        </linearGradient>
+      </defs>
+      <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z"/>
+    </svg>
+  </div>
+  <span class="soc-name">Instagram</span>
+  <span class="soc-handle">@slemanomarr</span>
+</a>
+
+  </div>
+</section>
+
+
+
+
+
+
+
+
+
+
+
+<footer>
+  Designed &amp; coded by <em>Suleman Omar</em> · 2025 · Built with ❤️ from Zakho
+</footer>
+
+<script>
+/* ── Cursor ── */
+const dot = document.getElementById('cur-dot');
+const ring = document.getElementById('cur-ring');
+let mx=0,my=0,rx=0,ry=0;
+document.addEventListener('mousemove', e=>{ mx=e.clientX; my=e.clientY; });
+(function loop(){
+  dot.style.cssText  += `left:${mx}px;top:${my}px`;
+  rx+=(mx-rx)*.13; ry+=(my-ry)*.13;
+  ring.style.cssText += `left:${rx}px;top:${ry}px`;
+  requestAnimationFrame(loop);
+})();
+document.querySelectorAll('a,button,.proj-card,.ttag,.lang-chip').forEach(el=>{
+  el.addEventListener('mouseenter',()=>document.body.classList.add('hov'));
+  el.addEventListener('mouseleave',()=>document.body.classList.remove('hov'));
+});
+
+/* ── Theme ── */
+const tt = document.getElementById('ttoggle');
+const tl = document.getElementById('tlabel');
+tt.addEventListener('change',()=>{
+  const light = tt.checked;
+  document.documentElement.setAttribute('data-theme', light?'light':'dark');
+  tl.textContent = light?'LIGHT':'DARK';
+});
+
+/* ── Hamburger ── */
+const ham = document.getElementById('ham');
+const mob = document.getElementById('mobnav');
+ham.addEventListener('click',()=>{ ham.classList.toggle('open'); mob.classList.toggle('open'); });
+mob.querySelectorAll('a').forEach(a=>a.addEventListener('click',()=>{ ham.classList.remove('open'); mob.classList.remove('open'); }));
+
+/* ── Reveal ── */
+const revEls = document.querySelectorAll('.rev');
+const revObs = new IntersectionObserver(entries=>{
+  entries.forEach(entry=>{
+    if(entry.isIntersecting){
+      const siblings = [...entry.target.parentElement.querySelectorAll('.rev')];
+      const i = siblings.indexOf(entry.target);
+      setTimeout(()=>entry.target.classList.add('in'), i*90);
+      revObs.unobserve(entry.target);
+    }
+  });
+},{threshold:.1});
+revEls.forEach(el=>revObs.observe(el));
+
+/* ── Skill bars ── */
+const barObs = new IntersectionObserver(entries=>{
+  entries.forEach(e=>{
+    if(e.isIntersecting){ e.target.style.width=e.target.dataset.w+'%'; barObs.unobserve(e.target); }
+  });
+},{threshold:.3});
+document.querySelectorAll('.bar-fill').forEach(b=>barObs.observe(b));
+
+/* ── Active nav ── */
+const secs = document.querySelectorAll('section[id]');
+const nlinks = document.querySelectorAll('.nav-links a');
+window.addEventListener('scroll',()=>{
+  let cur='';
+  secs.forEach(s=>{ if(window.scrollY>=s.offsetTop-180) cur=s.id; });
+  nlinks.forEach(a=>{
+    const active = a.getAttribute('href')==='#'+cur;
+    a.style.color = active ? 'var(--accent)' : '';
+  });
+},{passive:true});
+
+/* ── Form ── */
+function sendForm(e){
+  e.preventDefault();
+  const btn = e.target.querySelector('.send-btn');
+  btn.textContent='Sending…'; btn.disabled=true;
+  setTimeout(()=>{
+    document.getElementById('fok').style.display='block';
+    btn.textContent='Sent ✓'; btn.style.background='var(--accent2)';
+  },1100);
+}
+</script>
+</body>
+</html>
